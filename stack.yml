@@ -1,0 +1,44 @@
+version: '2'
+
+volumes:
+  redmine-plugins:
+  redmine-themes:
+  redmine-data:
+  postgres-data:
+
+networks:
+  redmine:
+    driver: bridge
+    
+services:
+
+  redmine:
+#Redmine Version goes here, in the IMAGE line.  
+    image: schaller_dmsf:latest
+    restart: always
+    networks:
+      - redmine
+    ports:
+    # HOST-PORT:CONTAINER-PORT
+      - 8082:3000
+    environment:
+      - 'REDMINE_DB_POSTGRES=db'
+      - 'REDMINE_DB_PASSWORD=example'
+      - 'REDMINE_DB_DATABASE=redmine'
+      - 'REDMINE_SECRET_KEY_BASE=supersecretkey'
+      - 'REDMINE_PLUGINS_MIGRATE=true'
+    volumes:
+    # Remember, this is HOST-LOCATION:CONTAINER-LOCATION
+      - redmine-plugins:/usr/src/redmine/plugins
+      - redmine-themes:/usr/src/redmine/public/themes
+      - redmine-data:/usr/src/redmine/files
+  db:
+    volumes: 
+      - redmine-data:/usr/src/redmine/files
+    networks:
+      - redmine
+    image: postgres:latest
+    restart: always
+    environment:
+      - 'POSTGRES_PASSWORD=example'
+      - 'POSTGRES_DB=redmine'
